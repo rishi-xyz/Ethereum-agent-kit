@@ -1,5 +1,5 @@
 import { ethers, Provider, Wallet } from "ethers";
-import { provider, wallet } from "./eth";
+import { provider, wallet } from "./src/ethereum/eth";
 
 async function test() {
     const balance = await provider.getBalance(wallet.address);
