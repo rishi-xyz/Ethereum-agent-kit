@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import { provider, wallet } from "../ethereum/eth";
 import { FunctionDeclaration, FunctionDeclarationsTool, SchemaType, Tool } from "@google/generative-ai";
 
+//Function declarations
 const balanceDeclarations: FunctionDeclaration = {
     name: "EthBalance",
     description: "Get balance of a ethereum address",
@@ -15,20 +16,7 @@ const balanceDeclarations: FunctionDeclaration = {
         },
         required: ["address"],
     }
-}
-
-export const balanceTool: FunctionDeclarationsTool = {
-    functionDeclarations: [balanceDeclarations]
 };
-
-type getEthBalanceProps = {
-    address: string,
-}
-
-export async function getEthBalance({ address }: getEthBalanceProps): Promise<string> {
-    const balance = await provider.getBalance(address);
-    return ethers.formatEther(balance);
-}
 
 const sendEthDeclaration: FunctionDeclaration = {
     name: "sendEth",
@@ -47,15 +35,30 @@ const sendEthDeclaration: FunctionDeclaration = {
         },
         required: ["to", "amount"],
     }
-}
+};
+
+//Tool Declarations
+export const balanceTool: FunctionDeclarationsTool = {
+    functionDeclarations: [balanceDeclarations]
+};
 
 export const sendEthTool: FunctionDeclarationsTool = {
     functionDeclarations: [sendEthDeclaration]
-}
+};
+
+//Function Types
+type getEthBalanceProps = {
+    address: string,
+};
 
 type sendEthProps = {
     to: string,
     amount: string,
+};
+
+export async function getEthBalance({ address }: getEthBalanceProps): Promise<string> {
+    const balance = await provider.getBalance(address);
+    return ethers.formatEther(balance);
 }
 
 export async function sendEth({ to, amount }: sendEthProps) {
