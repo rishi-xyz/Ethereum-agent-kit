@@ -1,12 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { config } from "../../config/config";
-import { balanceTool, getEthBalance, sendEth, sendEthTool } from "../blockchain/blockchain";
+import { balanceTool, getEthBalance, sendEth, sendEthTool, uploadContractFile, uploadContractTool } from "../blockchain/blockchain";
 import { SYSTEM_INSTRUCTIONS } from "./agent-instructions";
 
 const genAI = new GoogleGenerativeAI(config.geminiApiKey);
 const model = genAI.getGenerativeModel({
     model: "gemini-1.5-pro",
-    tools: [balanceTool, sendEthTool],
+    tools: [balanceTool, sendEthTool,uploadContractTool],
     systemInstruction: SYSTEM_INSTRUCTIONS
 });
 
@@ -21,7 +21,14 @@ async function handleFunctionCall(name: string, args: any): Promise<object> {
         return {
             transaction_hash: `The Transaction of Ethereum is ${hash}`
         };
+    }else if (name === "uploadContractFile") {
+        const fileContents = await uploadContractFile({ filePath: args.filePath });
+        return {
+            message: `File successfully uploaded and processed.`,
+            fileContents
+        };
     }
+    
     return {}; // \u2705 Always return an object (prevents `undefined` error)
 }
 

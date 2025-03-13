@@ -1,3 +1,5 @@
+import fs from "fs/promises";
+import path from "path";
 import { ethers } from "ethers";
 import { provider, wallet } from "../ethereum/eth";
 import { FunctionDeclaration, FunctionDeclarationsTool, SchemaType, Tool } from "@google/generative-ai";
@@ -37,6 +39,21 @@ const sendEthDeclaration: FunctionDeclaration = {
     }
 };
 
+const uploadContractDeclaration: FunctionDeclaration = {
+    name: "uploadContractFile",
+    description: "Upload a Solidity contract ABI or bytecode file",
+    parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+            filePath: {
+                type: SchemaType.STRING,
+                description: "The path of the file containing contract ABI or bytecode"
+            }
+        },
+        required: ["filePath"],
+    }
+};
+
 //Tool Declarations
 export const balanceTool: FunctionDeclarationsTool = {
     functionDeclarations: [balanceDeclarations]
@@ -44,6 +61,10 @@ export const balanceTool: FunctionDeclarationsTool = {
 
 export const sendEthTool: FunctionDeclarationsTool = {
     functionDeclarations: [sendEthDeclaration]
+};
+
+export const uploadContractTool: FunctionDeclarationsTool = {
+    functionDeclarations: [uploadContractDeclaration]
 };
 
 //Function Types
@@ -68,4 +89,14 @@ export async function sendEth({ to, amount }: sendEthProps) {
     });
     await tx.wait();
     return tx.hash;
+}
+
+export async function uploadContractFile({ filePath }: { filePath: string }): Promise<string> {
+    try {
+        const absolutePath = path.resolve(filePath);
+        const fileContents = await fs.readFile(absolutePath, "utf-8");
+        return fileContents;
+    } catch (error: any) {
+        throw new Error(`Failed to read file: ${error.message}`);
+    }
 }
