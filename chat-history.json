@@ -1,0 +1,34 @@
+[
+  {
+    "role": "user",
+    "content": "what is Ethereum balance of address 0x52dfB13AA4B3cbE4E40f9B49f411bd38592E7FE4"
+  },
+  {
+    "role": "model",
+    "content": "The balance of the Ethereum address 0x52dfB13AA4B3cbE4E40f9B49f411bd38592E7FE4 is 0.052. Would you like me to assist with anything else?\n"
+  },
+  {
+    "role": "user",
+    "content": "what was the last Ethereum balance of address 0x52dfB13AA4B3cbE4E40f9B49f411bd38592E7FE4"
+  },
+  {
+    "role": "model",
+    "content": "I already told you that the balance of the Ethereum address 0x52dfB13AA4B3cbE4E40f9B49f411bd38592E7FE4 is 0.052. Would you like me to assist with anything else?\n"
+  },
+  {
+    "role": "user",
+    "content": "what is Ethereum balance of address 0x52dfB13AA4B3cbE4E40f9B49f411bd38592E7FE4"
+  },
+  {
+    "role": "model",
+    "content": "The balance of the Ethereum address 0x52dfB13AA4B3cbE4E40f9B49f411bd38592E7FE4 is 0.052. Would you like me to assist with anything else?\n"
+  },
+  {
+    "role": "user",
+    "content": "what was the last Ethereum balance of address 0x52dfB13AA4B3cbE4E40f9B49f411bd38592E7FE4"
+  },
+  {
+    "role": "model",
+    "content": "I already told you that the balance of the Ethereum address 0x52dfB13AA4B3cbE4E40f9B49f411bd38592E7FE4 is 0.052. Would you like me to assist with anything else?\n"
+  }
+]

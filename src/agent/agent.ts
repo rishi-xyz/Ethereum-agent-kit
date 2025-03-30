@@ -2,65 +2,103 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { config } from "../../config/config";
 import { balanceTool, getEthBalance, sendEth, sendEthTool, uploadContractFile, uploadContractTool } from "../blockchain/blockchain";
 import { SYSTEM_INSTRUCTIONS } from "./agent-instructions";
+import fs from "fs";
 
-const genAI = new GoogleGenerativeAI(config.geminiApiKey);
-const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-pro",
-    tools: [balanceTool, sendEthTool,uploadContractTool],
-    systemInstruction: SYSTEM_INSTRUCTIONS
-});
+const CHAT_HISTORY_FILE = "chat-history.json";
 
-async function handleFunctionCall(name: string, args: any): Promise<object> {
-    if (name == "EthBalance") {
-        const bal = await getEthBalance({ address: args.address })
-        return {
-            balance: `The balance of the address:${args.address} is ${bal}`
-        };
-    } else if (name == "sendEth") {
-        const hash = await sendEth({ to: args.to, amount: args.amount })
-        return {
-            transaction_hash: `The Transaction of Ethereum is ${hash}`
-        };
-    }else if (name === "uploadContractFile") {
-        const fileContents = await uploadContractFile({ filePath: args.filePath });
-        return {
-            message: `File successfully uploaded and processed.`,
-            fileContents
-        };
+class GeminiAgent {
+    private genAI;
+    private model;
+    private chatHistory: any[];
+
+    constructor(model:string) {
+        this.genAI = new GoogleGenerativeAI(config.geminiApiKey);
+        this.model = this.genAI.getGenerativeModel({
+            model: model,
+            tools: [balanceTool, sendEthTool, uploadContractTool],
+            systemInstruction: SYSTEM_INSTRUCTIONS
+        });
+        this.chatHistory = this.loadChatHistory();
     }
-    
-    return {}; // \u2705 Always return an object (prevents `undefined` error)
-}
 
-export async function processQuery(messages: string) {
-    const chat = model.startChat();
-    const result = await chat.sendMessage(messages);
-    const parts = result.response?.candidates?.[0]?.content?.parts || [];
-    const functionCalls = parts.filter(part => part.functionCall); // Extract only function calls
-    if (functionCalls.length === 0) {
-        //No function call detected, respond normally
-        const textResponse = await result.response.text();
-        return textResponse;
+    private async handleFunctionCall(name: string, args: any): Promise<object> {
+        try {
+            if (name === "EthBalance") {
+                const bal = await getEthBalance({ address: args.address });
+                return { balance: `The balance of ${args.address} is ${bal}.` };
+            } else if (name === "sendEth") {
+                const hash = await sendEth({ to: args.to, amount: args.amount });
+                return { transaction_hash: `Transaction successful! Hash: ${hash}` };
+            } else if (name === "uploadContractFile") {
+                const fileContents = await uploadContractFile({ filePath: args.filePath });
+                return { message: `File uploaded successfully.`, fileContents };
+            }
+        } catch (error: any) {
+            console.error("Error in function call:", error);
+            return { error_message: error.message || "An unknown error occurred." };
+        }
+        return { error_message: "Unknown function call." };
     }
-    for (const part of functionCalls) {
-        const call = part.functionCall;
-        if (!call) continue;
 
-        // Call the appropriate function
-        const apiResponse = await handleFunctionCall(call.name, call.args);
+    private loadChatHistory(): any[] {
+        if (fs.existsSync(CHAT_HISTORY_FILE)) {
+            return JSON.parse(fs.readFileSync(CHAT_HISTORY_FILE, "utf-8"));
+        }
+        return [];
+    }
 
-        // Send API response back to Gemini to send a natural response
-        const result2 = await chat.sendMessage([
-            {
-                functionResponse: {
-                    name: call.name,
-                    response: apiResponse,
+    private saveChatHistory() {
+        fs.writeFileSync(CHAT_HISTORY_FILE, JSON.stringify(this.chatHistory, null, 2));
+    }
+
+    public async processQuery(message: string) {
+        this.chatHistory.push({ role: "user", content: message });
+
+        // Start a chat with the history included
+        const chat = this.model.startChat({
+            history: this.chatHistory.map((msg) => ({
+                role: msg.role,
+                parts: [{ text: msg.content }],
+            })),
+        });
+
+        const result = await chat.sendMessage(message);
+        const parts = result.response?.candidates?.[0]?.content?.parts || [];
+        const functionCalls = parts.filter(part => part.functionCall);
+
+        if (functionCalls.length === 0) {
+            const responseText = result.response.text();
+            this.chatHistory.push({ role: "model", content: responseText });
+            this.saveChatHistory();
+            return responseText;
+        }
+
+        for (const part of functionCalls) {
+            const call = part.functionCall;
+            if (!call) continue;
+
+            const apiResponse = await this.handleFunctionCall(call.name, call.args);
+
+            // Send the response (or error message) to Gemini
+            const result2 = await chat.sendMessage([
+                {
+                    functionResponse: {
+                        name: call.name,
+                        response: apiResponse,
+                    },
                 },
-            },
-        ]);
+            ]);
 
-        // Log the AI-generated natural response 
-        const textResponse = result2.response.text();
-        return textResponse;
+            const responseText = result2.response.text();
+            this.chatHistory.push({ role: "model", content: responseText });
+            this.saveChatHistory();
+            return responseText;
+        }
+    }
+
+    public getChatHistory() {
+        return this.chatHistory;
     }
 }
+
+export default GeminiAgent;
