@@ -6,4 +6,5 @@ export const config = {
   rpcUrl: process.env.ETHEREUM_RPC_URL!,
   privateKey: process.env.PRIVATE_KEY!,
   geminiApiKey: process.env.GEMINI_API_KEY!,
+  databaseUrl: process.env.DATABASE_URL!,
 };

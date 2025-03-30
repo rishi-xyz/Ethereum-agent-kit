@@ -11,8 +11,10 @@
   "description": "",
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
+    "@prisma/client": "^6.5.0",
     "dotenv": "^16.4.7",
     "ethers": "^6.13.5",
+    "prisma": "^6.5.0",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
