@@ -1,9 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import fs from "fs";
-import { config } from "../../config/config";
+import { config } from "../config/config";
 import { balanceTool, getEthBalance, sendEth, sendEthTool, uploadContractFile, uploadContractTool } from "../blockchain/blockchain";
 import { SYSTEM_INSTRUCTIONS } from "./agent-instructions";
-import prisma from "../../config/database";
+import prisma from "../config/database";
 
 const CHAT_HISTORY_FILE = "chat-history.json";
 
