@@ -4,6 +4,7 @@
  * @returns The balance of the Ethereum address
  * @throws If the address is not a valid Ethereum address
  */
+
 export type getEthBalanceProps = {
     address: string,
 };
@@ -14,7 +15,8 @@ export type getEthBalanceProps = {
  * @param amount - The amount of Ethereum to send
  * @returns The transaction hash of the Ethereum transaction
  * @throws If the transaction fails
- */ 
+ */
+ 
 export type sendEthProps = {
     to: string,
     amount: string,

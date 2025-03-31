@@ -8,6 +8,7 @@ import { getEthBalanceProps, sendEthProps } from "../types/functions";
  * @param address - The address of the Ethereum to get balance for
  * @returns The declaration for the get balance tool
  */
+
 const balanceDeclarations: FunctionDeclaration = {
     name: "EthBalance",
     description: "Get balance of a ethereum address",
