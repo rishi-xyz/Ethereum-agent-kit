@@ -46,5 +46,21 @@
   {
     "role": "model",
     "content": "The balance of your second public address 0x52dfB13AA4B3cbE4E40f9B49f411bd38592E7FE4 is 0.052. Would you like me to assist with anything else?\n"
+  },
+  {
+    "role": "user",
+    "content": "0x52dfB13AA4B3cbE4E40f9B49f411bd38592E7FE4 is my second public address"
+  },
+  {
+    "role": "model",
+    "content": "OK.\n"
+  },
+  {
+    "role": "user",
+    "content": "What is balance of my second public address"
+  },
+  {
+    "role": "model",
+    "content": "The balance of your second public address 0x52dfB13AA4B3cbE4E40f9B49f411bd38592E7FE4 is 0.052. Would you like me to assist with anything else?\n"
   }
 ]

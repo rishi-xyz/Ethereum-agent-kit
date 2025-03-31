@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
 import fs from "fs";
 import { config } from "../config/config";
-import { balanceTool, getEthBalance, sendEth, sendEthTool, uploadContractFile, uploadContractTool } from "../blockchain/blockchain";
+import { balanceTool, getEthBalance, sendEth, sendEthTool } from "../blockchain/blockchain";
 import { SYSTEM_INSTRUCTIONS } from "./agent-instructions";
 import prisma from "../config/database";
 import { ChatMessage } from "../types";
@@ -13,10 +13,6 @@ import { ChatMessage } from "../types";
  * @param history_file - The file to save the chat history to.
  */
 
-if(!config.geminiApiKey){
-    throw new Error("GEMINI_API_KEY is not set");
-}
-
 class GeminiAgent {
     private genAI: GoogleGenerativeAI;
     private model: GenerativeModel;
@@ -24,10 +20,13 @@ class GeminiAgent {
     private CHAT_HISTORY_FILE: string;
 
     constructor(model: string, history_file: string) {
+        if(!config.geminiApiKey){
+            throw new Error("GEMINI_API_KEY is not set");
+        }
         this.genAI = new GoogleGenerativeAI(config.geminiApiKey);
         this.model = this.genAI.getGenerativeModel({
             model: model,
-            tools: [balanceTool, sendEthTool, uploadContractTool],
+            tools: [balanceTool, sendEthTool],
             systemInstruction: SYSTEM_INSTRUCTIONS
         });
         this.CHAT_HISTORY_FILE = history_file || "chat-history.json";
@@ -42,9 +41,6 @@ class GeminiAgent {
             } else if (name === "sendEth") {
                 const hash = await sendEth({ to: args.to, amount: args.amount });
                 return { transaction_hash: `Transaction successful! Hash: ${hash}` };
-            } else if (name === "uploadContractFile") {
-                const fileContents = await uploadContractFile({ filePath: args.filePath });
-                return { message: `File uploaded successfully.`, fileContents };
             }
         } catch (error: any) {
             console.error("Error in function call:", error);
