@@ -1,10 +1,13 @@
-import fs from "fs/promises";
-import path from "path";
 import { ethers } from "ethers";
 import { provider, wallet } from "../ethereum/eth";
-import { FunctionDeclaration, FunctionDeclarationsTool, SchemaType, Tool } from "@google/generative-ai";
+import { FunctionDeclaration, FunctionDeclarationsTool, SchemaType } from "@google/generative-ai";
+import { getEthBalanceProps, sendEthProps } from "../types/functions";
 
-//Function declarations
+/**
+ * Declaration for the get balance tool
+ * @param address - The address of the Ethereum to get balance for
+ * @returns The declaration for the get balance tool
+ */
 const balanceDeclarations: FunctionDeclaration = {
     name: "EthBalance",
     description: "Get balance of a ethereum address",
@@ -19,6 +22,35 @@ const balanceDeclarations: FunctionDeclaration = {
         required: ["address"],
     }
 };
+
+/**
+ * Balance Tool
+ * @returns The tool to get the balance of a Ethereum address
+ * @throws If the declaration is not valid
+ */
+
+export const balanceTool: FunctionDeclarationsTool = {
+    functionDeclarations: [balanceDeclarations]
+};
+
+/**
+ * Function to get the balance of a Ethereum address
+ * @param getEthBalanceProps - The address of the Ethereum to get balance for
+ * @returns The balance of the Ethereum address
+ * @throws If the address is not a valid Ethereum address
+ */
+
+export async function getEthBalance({ address }: getEthBalanceProps): Promise<string> {
+    const balance = await provider.getBalance(address);
+    return ethers.formatEther(balance);
+}
+
+/**
+ * Declaration for the sendEth tool
+ * @param to - The address to send ethereum
+ * @param amount - The amount of ethereum to send
+ * @returns The declaration for the sendEth tool
+ */
 
 const sendEthDeclaration: FunctionDeclaration = {
     name: "sendEth",
@@ -39,48 +71,22 @@ const sendEthDeclaration: FunctionDeclaration = {
     }
 };
 
-const uploadContractDeclaration: FunctionDeclaration = {
-    name: "uploadContractFile",
-    description: "Upload a Solidity contract ABI or bytecode file",
-    parameters: {
-        type: SchemaType.OBJECT,
-        properties: {
-            filePath: {
-                type: SchemaType.STRING,
-                description: "The path of the file containing contract ABI or bytecode"
-            }
-        },
-        required: ["filePath"],
-    }
-};
-
-//Tool Declarations
-export const balanceTool: FunctionDeclarationsTool = {
-    functionDeclarations: [balanceDeclarations]
-};
+/**
+ * SendEth Tool
+ * @returns The tool to send ethereum to a address
+ * @throws If the declaration is not valid
+ */
 
 export const sendEthTool: FunctionDeclarationsTool = {
     functionDeclarations: [sendEthDeclaration]
 };
 
-export const uploadContractTool: FunctionDeclarationsTool = {
-    functionDeclarations: [uploadContractDeclaration]
-};
-
-//Function Types
-type getEthBalanceProps = {
-    address: string,
-};
-
-type sendEthProps = {
-    to: string,
-    amount: string,
-};
-
-export async function getEthBalance({ address }: getEthBalanceProps): Promise<string> {
-    const balance = await provider.getBalance(address);
-    return ethers.formatEther(balance);
-}
+/**
+ * Function to send ethereum to a address
+ * @param sendEthProps - The address and amount of ethereum to send
+ * @returns The hash of the transaction
+ * @throws If the address is not a valid Ethereum address
+ */
 
 export async function sendEth({ to, amount }: sendEthProps) {
     const tx = await wallet.sendTransaction({
@@ -89,14 +95,4 @@ export async function sendEth({ to, amount }: sendEthProps) {
     });
     await tx.wait();
     return tx.hash;
-}
-
-export async function uploadContractFile({ filePath }: { filePath: string }): Promise<string> {
-    try {
-        const absolutePath = path.resolve(filePath);
-        const fileContents = await fs.readFile(absolutePath, "utf-8");
-        return fileContents;
-    } catch (error: any) {
-        throw new Error(`Failed to read file: ${error.message}`);
-    }
 }

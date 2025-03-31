@@ -1,31 +1,36 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
 import fs from "fs";
 import { config } from "../config/config";
 import { balanceTool, getEthBalance, sendEth, sendEthTool, uploadContractFile, uploadContractTool } from "../blockchain/blockchain";
 import { SYSTEM_INSTRUCTIONS } from "./agent-instructions";
 import prisma from "../config/database";
+import { ChatMessage } from "../types";
 
-const CHAT_HISTORY_FILE = "chat-history.json";
+/**
+ * Create a Gemini AI-based agent that can interact with the Ethereum blockchain.
+ * 
+ * @param model - The model to use for the agent.
+ * @param history_file - The file to save the chat history to.
+ */
 
-type ChatMessage = {
-    id?: string;
-    role: "user" | "model";
-    content: string;
-    timestamp?: Date;
-};
+if(!config.geminiApiKey){
+    throw new Error("GEMINI_API_KEY is not set");
+}
 
 class GeminiAgent {
-    private genAI;
-    private model;
+    private genAI: GoogleGenerativeAI;
+    private model: GenerativeModel;
     private chatHistory: ChatMessage[];
+    private CHAT_HISTORY_FILE: string;
 
-    constructor(model: string) {
+    constructor(model: string, history_file: string) {
         this.genAI = new GoogleGenerativeAI(config.geminiApiKey);
         this.model = this.genAI.getGenerativeModel({
             model: model,
             tools: [balanceTool, sendEthTool, uploadContractTool],
             systemInstruction: SYSTEM_INSTRUCTIONS
         });
+        this.CHAT_HISTORY_FILE = history_file || "chat-history.json";
         this.chatHistory = this.loadChatHistory();
     }
 
@@ -67,14 +72,14 @@ class GeminiAgent {
     }
 
     private loadChatHistory(): ChatMessage[] {
-        if (fs.existsSync(CHAT_HISTORY_FILE)) {
-            return JSON.parse(fs.readFileSync(CHAT_HISTORY_FILE, "utf-8"));
+        if (fs.existsSync(this.CHAT_HISTORY_FILE)) {
+            return JSON.parse(fs.readFileSync(this.CHAT_HISTORY_FILE, "utf-8"));
         }
         return [];
     }
 
     private saveChatHistory() {
-        fs.writeFileSync(CHAT_HISTORY_FILE, JSON.stringify(this.chatHistory, null, 2));
+        fs.writeFileSync(this.CHAT_HISTORY_FILE, JSON.stringify(this.chatHistory, null, 2));
     }
 
     public getChatHistory(): ChatMessage[] {
@@ -84,7 +89,6 @@ class GeminiAgent {
     public async processQuery(message: string) {
         this.chatHistory.push({ role: "user", content: message });
 
-        // Start a chat with the history included
         const chat = this.model.startChat({
             history: this.chatHistory.map((msg) => ({
                 role: msg.role,
@@ -109,7 +113,6 @@ class GeminiAgent {
 
             const apiResponse = await this.handleFunctionCall(call.name, call.args);
 
-            // Send the response (or error message) to Gemini
             const result2 = await chat.sendMessage([
                 {
                     functionResponse: {
