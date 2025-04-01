@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
 import fs from "fs";
 import { config } from "../config/config";
-import { balanceTool, getEthBalance, sendEth, sendEthTool } from "../blockchain/blockchain";
+import { balanceTool, getEthBalance, sendEth, sendEthTool } from "../blockchain";
 import { SYSTEM_INSTRUCTIONS } from "./agent-instructions";
 import prisma from "../config/database";
 import { ChatMessage } from "../types";

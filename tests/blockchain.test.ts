@@ -1,4 +1,4 @@
-import { getEthBalance, sendEth } from "../src/blockchain/blockchain";
+import { getEthBalance, sendEth } from "../src/blockchain";
 import { ethers } from "ethers";
 
 // Mock ethers

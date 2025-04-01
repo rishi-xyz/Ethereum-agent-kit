@@ -2,7 +2,7 @@
 export * from "./agent/agent";
 
 //Blockchain
-export * from "./blockchain/blockchain";
+export * from "./blockchain";
 
 //Config
 export * from "./config/config";
