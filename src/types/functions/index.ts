@@ -1,3 +1,5 @@
+import { InterfaceAbi } from "ethers";
+
 /**
  * Type for the getEthBalance function
  * @param address - The address of the Ethereum to get balance for
@@ -5,7 +7,7 @@
  * @throws If the address is not a valid Ethereum address
  */
 
-import { InterfaceAbi } from "ethers";
+
 
 export type getEthBalanceProps = {
     address: string,
@@ -35,7 +37,7 @@ export type sendEthProps = {
  */
 
 export type deployERC20Props = {
-    abi: string,
+    abi: InterfaceAbi,
     bytecode: string,
     tokenName: string,
     tokenSymbol: string,
