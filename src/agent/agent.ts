@@ -13,14 +13,14 @@ import { ChatMessage } from "../types";
  * @param history_file - The file to save the chat history to.
  */
 
-class GeminiAgent {
+class EthereumAgent {
     private genAI: GoogleGenerativeAI;
     private model: GenerativeModel;
     private chatHistory: ChatMessage[];
     private CHAT_HISTORY_FILE: string;
 
-    constructor(model: string, history_file: string) {
-        if(!config.geminiApiKey){
+    constructor(model: string, history_file?: string) {
+        if (!config.geminiApiKey) {
             throw new Error("GEMINI_API_KEY is not set");
         }
         this.genAI = new GoogleGenerativeAI(config.geminiApiKey);
@@ -125,7 +125,7 @@ class GeminiAgent {
         }
     }
 
-    async  processQueryFromDatabase(message: string){
+    async processQueryFromDatabase(message: string) {
         this.saveMessageToDatabase(message, "user");
         const history = await this.getChatHistoryFromDatabase();
         console.log("History:", history);
@@ -169,4 +169,4 @@ class GeminiAgent {
 
 }
 
-export default GeminiAgent;
+export { EthereumAgent };

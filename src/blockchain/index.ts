@@ -8,3 +8,4 @@ export * from "./tools";
 
 export * from "./functions/getEthBalance";
 export * from "./functions/sendEth";
+export * from "./functions/deployERC-20";

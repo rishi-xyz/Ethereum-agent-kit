@@ -48,7 +48,13 @@ const sendEthDeclaration: FunctionDeclaration = {
     }
 };
 
+const deployERC20Declaration: FunctionDeclaration = {
+    name:"deployERC20",
+    description:"deploy ERC20 token on ethereum blockchain",
+}
+
 export {
     balanceDeclarations,
     sendEthDeclaration,
+    deployERC20Declaration
 };
