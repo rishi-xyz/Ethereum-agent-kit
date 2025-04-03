@@ -18,6 +18,7 @@ export async function deployERC20({ abi, bytecode, tokenName, tokenSymbol, decim
         return contract.getAddress();
     } catch (error) {
         console.error("ERC20 Deployment failed",error)
+        return (`Error in deployment of erc-20 ${error}`)
     }
 }
 

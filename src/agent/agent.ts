@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
 import fs from "fs";
 import { config } from "../config/config";
-import { balanceTool, getEthBalance, sendEth, sendEthTool } from "../blockchain";
+import { balanceTool, deployERC20, deployERC20Tool, getEthBalance, sendEth, sendEthTool } from "../blockchain";
 import { SYSTEM_INSTRUCTIONS } from "./agent-instructions";
 import prisma from "../config/database";
 import { ChatMessage } from "../types";
@@ -26,7 +26,7 @@ class EthereumAgent {
         this.genAI = new GoogleGenerativeAI(config.geminiApiKey);
         this.model = this.genAI.getGenerativeModel({
             model: model,
-            tools: [balanceTool, sendEthTool],
+            tools: [balanceTool, sendEthTool, deployERC20Tool],
             systemInstruction: SYSTEM_INSTRUCTIONS
         });
         this.CHAT_HISTORY_FILE = history_file || "chat-history.json";
@@ -41,6 +41,16 @@ class EthereumAgent {
             } else if (name === "sendEth") {
                 const hash = await sendEth({ to: args.to, amount: args.amount });
                 return { transaction_hash: `Transaction successful! Hash: ${hash}` };
+            } else if (name === "deployERC20") {
+                const address = await deployERC20({
+                    abi: args.abi,
+                    bytecode: args.bytecode,
+                    tokenName: args.tokenName,
+                    tokenSymbol: args.tokenSymbol,
+                    decimals: args.decimals,
+                    initialsupply: args.initialsupply,
+                });
+                return { address };
             }
         } catch (error: any) {
             console.error("Error in function call:", error);

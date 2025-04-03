@@ -1,5 +1,5 @@
 import { FunctionDeclarationsTool } from "@google/generative-ai";
-import { balanceDeclarations, sendEthDeclaration } from "../declarations";
+import { balanceDeclarations, deployERC20Declaration, sendEthDeclaration } from "../declarations";
 
 /**
  * Balance Tool
@@ -21,7 +21,18 @@ const sendEthTool: FunctionDeclarationsTool = {
     functionDeclarations: [sendEthDeclaration]
 };
 
+/**
+ * deployERC20 Tool
+ * @returns The tool to deploy ERC-20 tokens to Ethereum Blockchain
+ * @throws If the declaration is not valid
+ */
+
+const deployERC20Tool: FunctionDeclarationsTool = {
+    functionDeclarations: [deployERC20Declaration]
+}
+
 export {
     balanceTool,
     sendEthTool,
+    deployERC20Tool,
 };
