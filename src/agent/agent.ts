@@ -26,7 +26,7 @@ class EthereumAgent {
         this.genAI = new GoogleGenerativeAI(config.geminiApiKey);
         this.model = this.genAI.getGenerativeModel({
             model: model,
-            tools: [balanceTool, sendEthTool, deployERC20Tool],
+            tools: [balanceTool, sendEthTool],
             systemInstruction: SYSTEM_INSTRUCTIONS
         });
         this.CHAT_HISTORY_FILE = history_file || "chat-history.json";
@@ -41,17 +41,18 @@ class EthereumAgent {
             } else if (name === "sendEth") {
                 const hash = await sendEth({ to: args.to, amount: args.amount });
                 return { transaction_hash: `Transaction successful! Hash: ${hash}` };
-            } else if (name === "deployERC20") {
-                const address = await deployERC20({
-                    abi: args.abi,
-                    bytecode: args.bytecode,
-                    tokenName: args.tokenName,
-                    tokenSymbol: args.tokenSymbol,
-                    decimals: args.decimals,
-                    initialsupply: args.initialsupply,
-                });
-                return { address };
             }
+            // else if (name === "deployERC20") {
+            //     const address = await deployERC20({
+            //         abi: args.abi,
+            //         bytecode: args.bytecode,
+            //         tokenName: args.tokenName,
+            //         tokenSymbol: args.tokenSymbol,
+            //         decimals: args.decimals,
+            //         initialsupply: args.initialsupply,
+            //     });
+            //     return { address };
+            // }
         } catch (error: any) {
             console.error("Error in function call:", error);
             return { error_message: error.message || "An unknown error occurred." };
@@ -96,12 +97,16 @@ class EthereumAgent {
         this.chatHistory.push({ role: "user", content: message });
 
         const chat = this.model.startChat({
-            history: this.chatHistory.map((msg) => ({
-                role: msg.role,
-                parts: [{ text: msg.content }],
-            })),
+            history: this.chatHistory
+                .filter((msg) => msg.content && msg.content.trim() !== "")
+                .map((msg) => ({
+                    role: msg.role,
+                    parts: [{ text: msg.content }],
+                })),
         });
-
+        if (!message || message.trim() === "") {
+            throw new Error("Cannot send empty message to Gemini.");
+        }        
         const result = await chat.sendMessage(message);
         const parts = result.response?.candidates?.[0]?.content?.parts || [];
         const functionCalls = parts.filter(part => part.functionCall);
