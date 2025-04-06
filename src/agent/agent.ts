@@ -26,7 +26,7 @@ class EthereumAgent {
         this.genAI = new GoogleGenerativeAI(config.geminiApiKey);
         this.model = this.genAI.getGenerativeModel({
             model: model,
-            tools: [balanceTool, sendEthTool],
+            tools: [balanceTool, sendEthTool, deployERC20Tool],
             systemInstruction: SYSTEM_INSTRUCTIONS
         });
         this.CHAT_HISTORY_FILE = history_file || "chat-history.json";
@@ -42,17 +42,19 @@ class EthereumAgent {
                 const hash = await sendEth({ to: args.to, amount: args.amount });
                 return { transaction_hash: `Transaction successful! Hash: ${hash}` };
             }
-            // else if (name === "deployERC20") {
-            //     const address = await deployERC20({
-            //         abi: args.abi,
-            //         bytecode: args.bytecode,
-            //         tokenName: args.tokenName,
-            //         tokenSymbol: args.tokenSymbol,
-            //         decimals: args.decimals,
-            //         initialsupply: args.initialsupply,
-            //     });
-            //     return { address };
-            // }
+            else if (name === "createERC20") {
+                console.log("Arguments given by gemini:",args)//WIP:Remove
+                const address = await deployERC20({
+                    abi: args.abi,
+                    bytecode: args.bytecode,
+                    tokenName: args.tokenName,
+                    tokenSymbol: args.tokenSymbol,
+                    decimals: args.decimals ?? 18,
+                    initialsupply: args.initialsupply ?? "1000000",
+                });
+                console.log("Address Response: ",address)//WIP:Remove
+                return { address };
+            }
         } catch (error: any) {
             console.error("Error in function call:", error);
             return { error_message: error.message || "An unknown error occurred." };
@@ -106,11 +108,13 @@ class EthereumAgent {
         });
         if (!message || message.trim() === "") {
             throw new Error("Cannot send empty message to Gemini.");
-        }        
+        }
         const result = await chat.sendMessage(message);
+        console.log("Gemini raw response:", result);//WIP:Remove
         const parts = result.response?.candidates?.[0]?.content?.parts || [];
+        console.log("Parts:",parts);//WIP:Remove
         const functionCalls = parts.filter(part => part.functionCall);
-
+        console.log("FunctionCalls:",functionCalls);//WIP:Remove
         if (functionCalls.length === 0) {
             const responseText = result.response.text();
             this.chatHistory.push({ role: "model", content: responseText });
@@ -123,7 +127,7 @@ class EthereumAgent {
             if (!call) continue;
 
             const apiResponse = await this.handleFunctionCall(call.name, call.args);
-
+            console.log("apiResponse:", apiResponse);//WIP:Remove
             const result2 = await chat.sendMessage([
                 {
                     functionResponse: {
@@ -134,6 +138,7 @@ class EthereumAgent {
             ]);
 
             const responseText = result2.response.text();
+            console.log("Response text", responseText);//WIP:Remove
             this.chatHistory.push({ role: "model", content: responseText });
             this.saveChatHistory();
             return responseText;
