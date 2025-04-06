@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
+import { GoogleGenerativeAI, GenerativeModel, Tool } from "@google/generative-ai";
 import fs from "fs";
 import { config } from "../config/config";
 import { balanceTool, deployERC20, deployERC20Tool, getEthBalance, sendEth, sendEthTool } from "../blockchain";
@@ -18,15 +18,26 @@ class EthereumAgent {
     private model: GenerativeModel;
     private chatHistory: ChatMessage[];
     private CHAT_HISTORY_FILE: string;
+    private ethereumTools: Tool[] = [
+        balanceTool,
+        sendEthTool,
+        deployERC20Tool,
+    ];
 
-    constructor(model: string, history_file?: string) {
+    constructor({
+        model,
+        history_file
+    }: {
+        model: string,
+        history_file?: string
+    }) {
         if (!config.geminiApiKey) {
             throw new Error("GEMINI_API_KEY is not set");
-        }
+        };
         this.genAI = new GoogleGenerativeAI(config.geminiApiKey);
         this.model = this.genAI.getGenerativeModel({
             model: model,
-            tools: [balanceTool, sendEthTool, deployERC20Tool],
+            tools: this.ethereumTools,
             systemInstruction: SYSTEM_INSTRUCTIONS
         });
         this.CHAT_HISTORY_FILE = history_file || "chat-history.json";
@@ -43,7 +54,7 @@ class EthereumAgent {
                 return { transaction_hash: `Transaction successful! Hash: ${hash}` };
             }
             else if (name === "createERC20") {
-                console.log("Arguments given by gemini:",args)//WIP:Remove
+                console.log("Arguments given by gemini:", args)//WIP:Remove
                 const address = await deployERC20({
                     abi: args.abi,
                     bytecode: args.bytecode,
@@ -52,7 +63,7 @@ class EthereumAgent {
                     decimals: args.decimals ?? 18,
                     initialsupply: args.initialsupply ?? "1000000",
                 });
-                console.log("Address Response: ",address)//WIP:Remove
+                console.log("Address Response: ", address)//WIP:Remove
                 return { address };
             }
         } catch (error: any) {
@@ -106,42 +117,46 @@ class EthereumAgent {
                     parts: [{ text: msg.content }],
                 })),
         });
+
         if (!message || message.trim() === "") {
             throw new Error("Cannot send empty message to Gemini.");
         }
-        const result = await chat.sendMessage(message);
-        console.log("Gemini raw response:", result);//WIP:Remove
-        const parts = result.response?.candidates?.[0]?.content?.parts || [];
-        console.log("Parts:",parts);//WIP:Remove
-        const functionCalls = parts.filter(part => part.functionCall);
-        console.log("FunctionCalls:",functionCalls);//WIP:Remove
-        if (functionCalls.length === 0) {
-            const responseText = result.response.text();
-            this.chatHistory.push({ role: "model", content: responseText });
-            this.saveChatHistory();
-            return responseText;
-        }
 
-        for (const part of functionCalls) {
-            const call = part.functionCall;
-            if (!call) continue;
+        let result = await chat.sendMessage(message);
 
-            const apiResponse = await this.handleFunctionCall(call.name, call.args);
-            console.log("apiResponse:", apiResponse);//WIP:Remove
-            const result2 = await chat.sendMessage([
-                {
-                    functionResponse: {
-                        name: call.name,
-                        response: apiResponse,
+        while (true) {
+            console.log("Gemini raw response:", result); // Debug
+            const parts = result.response?.candidates?.[0]?.content?.parts || [];
+            console.log("Parts:", parts); // Debug
+
+            const functionCalls = parts.filter(part => part.functionCall);
+            console.log("FunctionCalls:", functionCalls); // Debug
+
+            if (functionCalls.length === 0) {
+                const responseText = result.response.text();
+                this.chatHistory.push({ role: "model", content: responseText });
+                this.saveChatHistory();
+                return responseText;
+            }
+
+            for (const part of functionCalls) {
+                const call = part.functionCall;
+                if (!call) continue;
+
+                console.log("Calls", call); // Debug
+
+                const apiResponse = await this.handleFunctionCall(call.name, call.args);
+                console.log("apiResponse:", apiResponse); // Debug
+
+                result = await chat.sendMessage([
+                    {
+                        functionResponse: {
+                            name: call.name,
+                            response: apiResponse,
+                        },
                     },
-                },
-            ]);
-
-            const responseText = result2.response.text();
-            console.log("Response text", responseText);//WIP:Remove
-            this.chatHistory.push({ role: "model", content: responseText });
-            this.saveChatHistory();
-            return responseText;
+                ]);
+            }
         }
     }
 

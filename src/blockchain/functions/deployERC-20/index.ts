@@ -1,7 +1,6 @@
 import { ethers } from "ethers";
 import { wallet } from "../../../ethereum/eth";
 import { deployERC20Props } from "../../../types/functions";
-import * as fs from "fs"
 
 /**
  * function to deploy ERC20 token using ABI(Application Binary Interface) and Bytecode

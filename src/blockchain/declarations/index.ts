@@ -66,7 +66,42 @@ const deployERC20Declaration: FunctionDeclaration = {
         type: SchemaType.OBJECT,
         properties: {
             abi: {
-                type: SchemaType.ARRAY,
+                type: SchemaType.STRING,
+                description: "ABI of the smart contract in JSON stringified format"
+            },
+            bytecode: {
+                type: SchemaType.STRING,
+                description: "The compiled bytecode of the ERC20 contract"
+            },
+            tokenName: {
+                type: SchemaType.STRING,
+                description: "The name of the ERC20 token"
+            },
+            tokenSymbol: {
+                type: SchemaType.STRING,
+                description: "The symbol of the ERC20 token"
+            },
+            decimals: {
+                type: SchemaType.NUMBER,
+                description: "determines how many decimal places a token can be divided into default is 18"
+            },
+            initialsupply: {
+                type: SchemaType.STRING,
+                description: "amount of token to mint initially default is 1000000"
+            },
+        },
+        required: ["abi", "bytecode", "tokenName", "tokenSymbol", "decimals", "initialsupply"]
+    }
+};
+
+export {
+    balanceDeclarations,
+    sendEthDeclaration,
+    deployERC20Declaration
+};
+
+/**
+ * type: SchemaType.ARRAY,
                 description: "The ABI (Application Binary Interface) defining the contract's structure",
                 items: {
                     type: SchemaType.OBJECT,
@@ -127,34 +162,4 @@ const deployERC20Declaration: FunctionDeclaration = {
                     },
                     required: ["type"]
                 }
-            },
-            bytecode: {
-                type: SchemaType.STRING,
-                description: "The compiled bytecode of the ERC20 contract"
-            },
-            tokenName: {
-                type: SchemaType.STRING,
-                description: "The name of the ERC20 token"
-            },
-            tokenSymbol: {
-                type: SchemaType.STRING,
-                description: "The symbol of the ERC20 token"
-            },
-            decimals: {
-                type: SchemaType.NUMBER,
-                description: "determines how many decimal places a token can be divided into default is 18"
-            },
-            initialsupply: {
-                type: SchemaType.STRING,
-                description: "amount of token to mint initially default is 1000000"
-            },
-        },
-        required: ["abi", "bytecode", "tokenName", "tokenSymbol"]
-    }
-};
-
-export {
-    balanceDeclarations,
-    sendEthDeclaration,
-    deployERC20Declaration
-};
+ */
