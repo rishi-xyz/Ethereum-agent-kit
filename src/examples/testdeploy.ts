@@ -322,7 +322,7 @@ async function testdeployERC20() {
     const agent = new EthereumAgent({
         model: "gemini-2.0-flash"
     });
-    const agentRes = await agent.processQuery(`create a ERC-20 token with abi is ${JSON.stringify(abi)} and bytecode is ${bytecode} the name should be EthereumAgent and token symbol is EthAgent`)
+    const agentRes = await agent.processQuery(`create a ERC-20 token with abi is ${JSON.stringify(abi)} and bytecode is ${bytecode} the name should be EthereumAgent and token symbol is EthAgent initial supply should be 1000000 and decimals to be 18`)
     console.log(agentRes)
 }
 

@@ -61,7 +61,7 @@ const sendEthDeclaration: FunctionDeclaration = {
 
 const deployERC20Declaration: FunctionDeclaration = {
     name: "createERC20",
-    description: "Funtionality to Create or Deploy simple or complex ERC20 token or contract on the Ethereum blockchain using abi or application binary code and bytecode",
+    description: "Create  ERC20 token on the Ethereum blockchain using abi or application binary code and bytecode",
     parameters: {
         type: SchemaType.OBJECT,
         properties: {
