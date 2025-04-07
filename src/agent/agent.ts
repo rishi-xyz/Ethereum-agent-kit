@@ -46,6 +46,7 @@ class EthereumAgent {
 
     private async handleFunctionCall(name: string, args: any): Promise<object> {
         try {
+            console.log("name:",name)
             if (name === "EthBalance") {
                 const bal = await getEthBalance({ address: args.address });
                 return { balance: `The balance of ${args.address} is ${bal}.` };
@@ -126,10 +127,13 @@ class EthereumAgent {
 
         while (true) {
             console.log("Gemini raw response:", result); // Debug
+            console.dir(result.response?.candidates)
             const parts = result.response?.candidates?.[0]?.content?.parts || [];
             console.log("Parts:", parts); // Debug
 
             const functionCalls = parts.filter(part => part.functionCall);
+            console.log("Function calls dir")
+            console.dir(result.response?.functionCalls()?.map((cb)=>console.log(cb.name)))
             console.log("FunctionCalls:", functionCalls); // Debug
 
             if (functionCalls.length === 0) {
