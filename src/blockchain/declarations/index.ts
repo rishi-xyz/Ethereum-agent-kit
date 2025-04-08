@@ -71,7 +71,7 @@ const deployERC20Declaration: FunctionDeclaration = {
             },
             bytecode: {
                 type: SchemaType.STRING,
-                description: "The compiled bytecode of the ERC20 contract"
+                description: "A very long hex string. The compiled bytecode of the ERC20 contract. Must start with 0x"
             },
             tokenName: {
                 type: SchemaType.STRING,
