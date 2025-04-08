@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI, GenerativeModel, Tool } from "@google/generative-ai";
 import fs from "fs";
 import { config } from "../config/config";
-import { balanceTool, deployERC20, deployERC20Tool, getEthBalance, sendEth, sendEthTool } from "../blockchain";
+import { balanceTool, deployERC20, deployERC20Tool, getEthBalance, getTransactionDetails, getTransactionDetailsTool, sendEth, sendEthTool } from "../blockchain";
 import { SYSTEM_INSTRUCTIONS } from "./agent-instructions";
 import prisma from "../config/database";
 import { ChatMessage } from "../types";
@@ -22,6 +22,7 @@ class EthereumAgent {
         balanceTool,
         sendEthTool,
         deployERC20Tool,
+        getTransactionDetailsTool,
     ];
 
     constructor({
@@ -46,16 +47,13 @@ class EthereumAgent {
 
     private async handleFunctionCall(name: string, args: any): Promise<object> {
         try {
-            console.log("name:",name)
             if (name === "EthBalance") {
                 const bal = await getEthBalance({ address: args.address });
                 return { balance: `The balance of ${args.address} is ${bal}.` };
             } else if (name === "sendEth") {
                 const hash = await sendEth({ to: args.to, amount: args.amount });
                 return { transaction_hash: `Transaction successful! Hash: ${hash}` };
-            }
-            else if (name === "createERC20") {
-                console.log("Arguments given by gemini:", args)//WIP:Remove
+            } else if (name === "createERC20") {
                 const address = await deployERC20({
                     abi: args.abi,
                     bytecode: args.bytecode,
@@ -64,11 +62,14 @@ class EthereumAgent {
                     decimals: args.decimals ?? 18,
                     initialsupply: args.initialsupply ?? "1000000",
                 });
-                console.log("Address Response: ", address)//WIP:Remove
                 return { address };
+            } else if (name === "getTransactionDetails") {
+                const response = await getTransactionDetails({
+                    hash: args.hash
+                });
+                return { response };
             }
         } catch (error: any) {
-            console.error("Error in function call:", error);
             return { error_message: error.message || "An unknown error occurred." };
         }
         return { error_message: "Unknown function call." };
@@ -126,16 +127,9 @@ class EthereumAgent {
         let result = await chat.sendMessage(message);
 
         while (true) {
-            console.log("Gemini raw response:", result); // Debug
-            console.dir(result.response?.candidates)
             const parts = result.response?.candidates?.[0]?.content?.parts || [];
-            console.log("Parts:", parts); // Debug
 
             const functionCalls = parts.filter(part => part.functionCall);
-            console.log("Function calls dir")
-            console.dir(result.response?.functionCalls()?.map((cb)=>console.log(cb.name)))
-            console.log("FunctionCalls:", functionCalls); // Debug
-
             if (functionCalls.length === 0) {
                 const responseText = result.response.text();
                 this.chatHistory.push({ role: "model", content: responseText });
@@ -146,12 +140,7 @@ class EthereumAgent {
             for (const part of functionCalls) {
                 const call = part.functionCall;
                 if (!call) continue;
-
-                console.log("Calls", call); // Debug
-
                 const apiResponse = await this.handleFunctionCall(call.name, call.args);
-                console.log("apiResponse:", apiResponse); // Debug
-
                 result = await chat.sendMessage([
                     {
                         functionResponse: {
@@ -167,7 +156,6 @@ class EthereumAgent {
     async processQueryFromDatabase(message: string) {
         this.saveMessageToDatabase(message, "user");
         const history = await this.getChatHistoryFromDatabase();
-        console.log("History:", history);
         const chat = this.model.startChat({
             history: history.map((msg) => ({
                 role: msg.role,

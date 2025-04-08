@@ -94,72 +94,31 @@ const deployERC20Declaration: FunctionDeclaration = {
     }
 };
 
+
+/**
+ * Declaration for the getTransactionDetails tool
+ * @param hash  - The transaction hash to get the details of the transaction.
+ * @returns The declaration for the getTransactionDetails tool.
+ */
+
+const getTransactionDetailsDeclaration: FunctionDeclaration = {
+    name: "getTransactionDetails",
+    description: "get Transaction Details using transaction hash",
+    parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+            hash: {
+                type: SchemaType.STRING,
+                description: "the transaction hash to get details of the transaction"
+            },
+        },
+        required: ["hash"]
+    }
+};
+
 export {
     balanceDeclarations,
     sendEthDeclaration,
-    deployERC20Declaration
+    deployERC20Declaration,
+    getTransactionDetailsDeclaration,
 };
-
-/**
- * type: SchemaType.ARRAY,
-                description: "The ABI (Application Binary Interface) defining the contract's structure",
-                items: {
-                    type: SchemaType.OBJECT,
-                    description: "An ABI item (function, constructor, event, etc.)",
-                    properties: {
-                        type: {
-                            type: SchemaType.STRING,
-                            description: "The ABI entry type (e.g., function, constructor, fallback, event, receive)"
-                        },
-                        name: {
-                            type: SchemaType.STRING,
-                            description: "Name of the function or event (if applicable)"
-                        },
-                        inputs: {
-                            type: SchemaType.ARRAY,
-                            description: "Input parameters (if applicable)",
-                            items: {
-                                type: SchemaType.OBJECT,
-                                properties: {
-                                    name: {
-                                        type: SchemaType.STRING,
-                                        description: "Parameter name"
-                                    },
-                                    type: {
-                                        type: SchemaType.STRING,
-                                        description: "Solidity data type"
-                                    }
-                                },
-                                required: ["type"]
-                            }
-                        },
-                        outputs: {
-                            type: SchemaType.ARRAY,
-                            description: "Output parameters (for functions)",
-                            items: {
-                                type: SchemaType.OBJECT,
-                                properties: {
-                                    name: {
-                                        type: SchemaType.STRING,
-                                        description: "Output name (optional)"
-                                    },
-                                    type: {
-                                        type: SchemaType.STRING,
-                                        description: "Solidity return type"
-                                    }
-                                },
-                                required: ["type"]
-                            }
-                        },
-                        stateMutability: {
-                            type: SchemaType.STRING,
-                            description: "State mutability (e.g., view, pure, payable, nonpayable)"
-                        },
-                        anonymous: {
-                            type: SchemaType.BOOLEAN,
-                            description: "Whether the event is anonymous (for events only)"
-                        }
-                    },
-                    required: ["type"]
-                }
- */
