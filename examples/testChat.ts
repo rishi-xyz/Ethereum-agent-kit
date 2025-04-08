@@ -1,4 +1,4 @@
-import { EthereumAgent } from "../agent/agent";
+import { EthereumAgent } from "../src/agent/agent";
 
 async function testGeminiAgent() {
     const agent = new EthereumAgent({
