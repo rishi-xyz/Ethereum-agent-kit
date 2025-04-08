@@ -27,7 +27,7 @@ export type sendEthProps = {
 };
 
 /**
- * Type for the deployERC20 dunctions
+ * Type for the deployERC20 functions
  * @param abi - The path for application binary interface of contract
  * @param bytecode - The path for bytecode of the contract
  * @param tokenName - Name of the ERC-20 token
@@ -44,3 +44,12 @@ export type deployERC20Props = {
     decimals?: number,
     initialsupply?: string,
 };
+
+/**
+ * Type for the getTransactionDetails functions
+ * @param hash - the transaction hash of block 
+ */
+
+export type getTransactionDetailsProps = {
+    hash:string
+}

@@ -1,5 +1,5 @@
 import { FunctionDeclarationsTool } from "@google/generative-ai";
-import { balanceDeclarations, deployERC20Declaration, sendEthDeclaration } from "../declarations";
+import { balanceDeclarations, deployERC20Declaration, getTransactionDetailsDeclaration, sendEthDeclaration } from "../declarations";
 
 /**
  * Balance Tool
@@ -31,8 +31,19 @@ const deployERC20Tool: FunctionDeclarationsTool = {
     functionDeclarations: [deployERC20Declaration]
 }
 
+/**
+ * getTransactionDetails Tool
+ * @returns The tool to get details of the transaction using it's transaction hash
+ * @throws If declaration is not valid
+ */
+
+const getTransactionDetailsTool: FunctionDeclarationsTool = {
+    functionDeclarations: [getTransactionDetailsDeclaration]
+}
+
 export {
     balanceTool,
     sendEthTool,
     deployERC20Tool,
+    getTransactionDetailsTool,
 };
